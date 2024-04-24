@@ -17,3 +17,15 @@ module.exports.deletePostById = function(req, res) {
 module.exports.updatePostById = function(req, res) {
     res.json({ msg: 'PUT /posts/:id not implemented', params: req.params, user: req.user, body: req.body })
 }
+
+module.exports.likePostById = function(req, res) {
+    res.json({ msg: 'POST /posts/:postId/likes not implemented', params: req.params, user: req.user, body: req.body })
+}
+
+module.exports.getLikes = function(req, res) {
+    res.json({ msg: 'GET /posts/:postId/likes not implemented', params: req.params, user: req.user, body: req.body })
+}
+
+module.exports.deleteLikeById = function(req, res) {
+    res.json({ msg: 'DELETE /posts/:postId/likes/:likeId not implemented', params: req.params, user: req.user, body: req.body })
+}
