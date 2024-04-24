@@ -1,31 +1,31 @@
 module.exports.getPosts = function(req, res) {
-    res.json(`GET /posts not implemented`)
+    res.json(`Get post list not implemented`)
 }
 
 module.exports.createPost = function(req, res) {
-    res.json({ msg: 'POST /posts not implemented', body: req.body, user: req.user })
+    res.json({ msg: 'Create post not implemented', body: req.body, user: req.user })
 }
 
 module.exports.getPostById = function(req, res) {
-    res.json({ msg: 'GET /posts/:id not implemeted', params: req.params, user: req.user })
+    res.json({ msg: 'Get post by id not implemeted', params: req.params, user: req.user })
 }
 
 module.exports.deletePostById = function(req, res) {
-    res.json({ msg: 'DELETE /posts/:id not implemented', params: req.params, user: req.user })
+    res.json({ msg: 'Delete post by id not implemented', params: req.params, user: req.user })
 }
 
 module.exports.updatePostById = function(req, res) {
-    res.json({ msg: 'PUT /posts/:id not implemented', params: req.params, user: req.user, body: req.body })
+    res.json({ msg: 'Update post by id not implemented', params: req.params, user: req.user, body: req.body })
 }
 
 module.exports.likePostById = function(req, res) {
-    res.json({ msg: 'POST /posts/:postId/likes not implemented', params: req.params, user: req.user, body: req.body })
+    res.json({ msg: 'Like post not implemented', params: req.params, user: req.user, body: req.body })
 }
 
 module.exports.getLikes = function(req, res) {
-    res.json({ msg: 'GET /posts/:postId/likes not implemented', params: req.params, user: req.user, body: req.body })
+    res.json({ msg: 'Get likes on post not implemented', params: req.params, user: req.user, body: req.body })
 }
 
 module.exports.deleteLikeById = function(req, res) {
-    res.json({ msg: 'DELETE /posts/:postId/likes/:likeId not implemented', params: req.params, user: req.user, body: req.body })
+    res.json({ msg: 'Delete like on post not implemented', params: req.params, user: req.user, body: req.body })
 }
