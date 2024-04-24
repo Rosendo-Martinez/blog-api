@@ -1,24 +1,15 @@
 const express = require('express')
 const router = express.Router()
+const controller = require('../controllers/postsController')
 
-router.get('/posts', (req, res) => {
-    res.json(`GET /posts not implemented`)
-})
+router.get('/posts', controller.getPosts)
 
-router.post('/posts', (req, res) => {
-    res.json({ msg: 'POST /posts not implemented', body: req.body, user: req.user })
-})
+router.post('/posts', controller.createPost)
 
-router.get('/posts/:id', (req, res) => {
-    res.json({ msg: 'GET /posts/:id not implemeted', params: req.params, user: req.user })
-})
+router.get('/posts/:id', controller.getPostById)
 
-router.delete('/posts/:id', (req, res) => {
-    res.json({ msg: 'DELETE /posts/:id not implemented', params: req.params, user: req.user })
-})
+router.delete('/posts/:id', controller.deletePostById)
 
-router.put('/posts/:id', (req, res) => {
-    res.json({ msg: 'PUT /posts/:id not implemented', params: req.params, user: req.user, body: req.body })
-})
+router.put('/posts/:id', controller.updatePostById)
 
 module.exports = router
