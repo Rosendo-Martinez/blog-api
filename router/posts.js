@@ -18,4 +18,12 @@ router.get('/posts/:postId/likes', controller.getLikes)
 
 router.delete('/posts/:postId/likes/:likeId', controller.deleteLikeById)
 
+router.get('/posts/:postId/comments', controller.getPostComments)
+
+router.post('/posts/:postId/comments', controller.createPostComment)
+
+router.put('/posts/:postId/comments/:commentId', controller.updatePostComment)
+
+router.delete('/posts/:postId/comments/:commentId', controller.deletePostComment)
+
 module.exports = router
