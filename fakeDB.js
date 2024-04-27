@@ -9,9 +9,26 @@ class User {
         ]
     }
 
-    find(cb) {
-        return this.#user_list.find(cb)
+    /**
+     * Finds the user with the given username & password or return undefined.
+     * 
+     * @param {*} username 
+     * @param {*} password 
+     * @returns 
+     */
+    find(username, password) {
+        return this.#user_list.find(u => u.username === username && u.password === password)
+    }
+
+    /**
+     * Finds the user with the given Id or returns undefined.
+     * 
+     * @param {*} id 
+     * @returns 
+     */
+    findById(id) {
+        return this.#user_list.find(u => u.id === id)
     }
 }
 
-module.exports = User
+module.exports = new User()
