@@ -10,9 +10,12 @@ module.exports.updateAccount = function(req, res) {
     res.json({ msg: 'Update account not implemented', params: req.params, user: req.user, body: req.body })
 }
 
-module.exports.getAccount = function(req, res) {
-    res.json({ msg: 'Get account not implemented', params: req.params, user: req.user, body: req.body })
-}
+module.exports.getAccount = [
+    passport.authenticate('jwt', { session: false }),
+    function(req, res) {
+        res.json({ msg: 'Get account not implemented', params: req.params, user: req.user, body: req.body })
+    }
+]
 
 module.exports.login = function(req, res) {
     const user = User.find(req.body.username, req.body.password)
