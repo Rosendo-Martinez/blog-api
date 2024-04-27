@@ -8,7 +8,7 @@ const USERS = [{ username: 'genos', password: 'disciple', id: '1' }] // temporar
 passport.use(new JwtStrategy(
     {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey: SECRET
+        secretOrKey: process.env.JWT_SECRET
     }, 
     function verify(jwt_payload, done) {
         const user = USERS.find((u) => u.id === jwt_payload.id)

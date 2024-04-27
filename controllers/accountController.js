@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const passport = require('./passportjs')
+const passport = require('../passportjs')
 
 module.exports.register = function(req, res) {
     res.json({ msg: 'Register not implemented', params: req.params, user: req.user, body: req.body })
@@ -21,7 +21,7 @@ module.exports.login = function(req, res) {
     const SECRET = '12345' // temporary till env var is set up
 
     if (req.body.username === USER.username && req.body.password === USER.password) {
-        const token = jwt.sign({ id: USER.id }, SECRET, { expiresIn: '5m' })
+        const token = jwt.sign({ id: USER.id }, process.env.JWT_SECRET, { expiresIn: '5m' })
         res.json({ 
             msg: "Here is your authentication token. Make sure to send it with your request every time you need to access a protected API endpoint.", 
             token: token
