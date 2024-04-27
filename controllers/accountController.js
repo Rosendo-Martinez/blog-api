@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken')
+const passport = require('./passportjs')
 
 module.exports.register = function(req, res) {
     res.json({ msg: 'Register not implemented', params: req.params, user: req.user, body: req.body })
