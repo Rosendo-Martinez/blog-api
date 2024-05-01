@@ -8,9 +8,17 @@ function generateUserToken(userId) {
     return jwt.sign({ userId: userId }, process.env.JWT_SECRET, { expiresIn: '5m' })
 }
 
-async function createUser(username, email, password) {
+/**
+ * @param {String} password 
+ * @returns {Promise}
+ */
+function hashPassword(password) {
     const SALT_ROUNDS = 2
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS)
+    return bcrypt.hash(password, SALT_ROUNDS)
+}
+
+async function createUser(username, email, password) {
+    const hashedPassword = await hashPassword(password)
 
     return new User({ username: username, email: email, hashedPassword: hashedPassword })
 }
@@ -61,9 +69,79 @@ module.exports.register = [
     }
 ]
 
-module.exports.updateAccount = function(req, res) {
-    res.json({ msg: 'Update account not implemented', params: req.params, user: req.user, body: req.body })
-}
+module.exports.updateAccount = [
+    passport.authenticate('jwt', { session: false }),
+    body('newUsername')
+        .optional()
+        .trim()
+        .isLength({ min: 1, max: 30 })
+        .withMessage('Username must be minimum of 1 and a maximum of 30 characters.')
+        .custom(async (username, { req }) => {
+            const usernameCaseInsensitiveRegex = new RegExp(`^${username}$`, 'i')
+            const user = await User.findOne({ username: { $regex : usernameCaseInsensitiveRegex }, _id: { $ne: req.user._id } }).exec()
+
+            if (user) {
+                throw new Error()
+            }
+        })
+        .withMessage('Another user already has this username.'),
+    body('newEmail')
+        .optional()
+        .trim()
+        .isEmail()
+        .withMessage('Email must be valid.')
+        .custom(async (email, { req }) => {
+            const user = await User.findOne({ email: email, _id: { $not: req.user._id } }).exec()
+
+            if (user) {
+                throw new Error()
+            }
+        })
+        .withMessage('Another user already has this email.'),
+    body('newPassword')
+        .optional()
+        .isLength({ min: 4, max: 25 })
+        .withMessage('Password must be between 4 and 25 characters long.'),
+    body('currentPassword')
+        .custom(async (password, { req }) => {
+            const passwordMatches = await bcrypt.compare(password, req.user.hashedPassword)
+
+            if (!passwordMatches) {
+                throw new Error()
+            }
+        })
+        .withMessage('Password is incorrect.'),
+    async (req, res) => {
+        const result = validationResult(req)
+
+        if (!result.isEmpty()) {
+            return res.status(400).json(result.mapped())
+        }
+
+        try {
+            const fieldsToIterate = ['newUsername', 'newEmail'];
+            const updatedFields = [];
+    
+            for (const field of fieldsToIterate) {
+                if (req.body[field]) {
+                    const userField = field.substring(3).toLowerCase(); // Convert 'newUsername' to 'username'
+                    req.user[userField] = req.body[field];
+                    updatedFields.push(userField);
+                }
+            }
+    
+            if (req.body.newPassword) {
+                req.user.hashedPassword = await hashPassword(req.body.newPassword);
+                updatedFields.push('password');
+            }
+    
+            await req.user.save();
+            res.json({ msg: 'Account updated.', fieldsUpdated: updatedFields });
+        } catch (error) {
+            res.status(500).json({ msg: 'Failed to update account.', error: error.message, fieldsAttempted: updatedFields });
+        }
+    }
+]
 
 module.exports.getAccount = [
     passport.authenticate('jwt', { session: false }),
