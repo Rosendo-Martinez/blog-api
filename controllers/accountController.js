@@ -23,6 +23,33 @@ async function createUser(username, email, password) {
     return new User({ username: username, email: email, hashedPassword: hashedPassword })
 }
 
+/**
+ * Updates the user object (does not save).
+ * 
+ * @param {*} user User object to update.
+ * @param {*} updates Object containing the fields to update; undefined values will be ignored.
+ * @returns {Promise<String[]>} Promise returns an array of strings listing the updated fields.
+ */
+async function updateUser(user, updates) {
+    const updatedFields = [];
+
+    for (const field in updates) {
+        if (updates[field] === undefined) {
+            continue; // Skip undefined values to prevent unwanted updates.
+        }
+
+        if (field === 'password') {
+            user.hashedPassword = await hashPassword(updates[field]); // Ensure password is hashed.
+            updatedFields.push('password');
+        } else {
+            user[field] = updates[field];
+            updatedFields.push(field);
+        }
+    }
+
+    return updatedFields;
+}
+
 module.exports.register = [
     body('username')
         .trim()
@@ -119,21 +146,7 @@ module.exports.updateAccount = [
         }
 
         try {
-            const fieldsToIterate = ['newUsername', 'newEmail'];
-            const updatedFields = [];
-    
-            for (const field of fieldsToIterate) {
-                if (req.body[field]) {
-                    const userField = field.substring(3).toLowerCase(); // Convert 'newUsername' to 'username'
-                    req.user[userField] = req.body[field];
-                    updatedFields.push(userField);
-                }
-            }
-    
-            if (req.body.newPassword) {
-                req.user.hashedPassword = await hashPassword(req.body.newPassword);
-                updatedFields.push('password');
-            }
+            const updatedFields = await updateUser(req.user, { username: req.body.newUsername, email: req.body.newEmail, password: req.body.newPassword })
     
             await req.user.save();
             res.json({ msg: 'Account updated.', fieldsUpdated: updatedFields });
