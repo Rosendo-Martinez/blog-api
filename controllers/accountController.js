@@ -190,16 +190,24 @@ module.exports.getAccount = [
     }
 ]
 
-module.exports.login = function(req, res) {
-    const user = User.find(req.body.username, req.body.password)
-
-    if (user) {
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '5m' })
-        res.json({ 
-            msg: "Here is your authentication token. Make sure to send it with your request every time you need to access a protected API endpoint.", 
+module.exports.login = [
+    (req, res, next) => {
+        passport.authenticate('local', (err, user, info) => {
+            if (err) {
+                return res.status(500).json({ msg: 'Authentication failed due to server error.', error: err.toString() })
+            }
+            if (!user) {
+                return res.status(401).json({ msg: 'Authentication failed.', reason: info.message })
+            }
+            req.user = user
+            next()
+        })(req, res, next)
+    },
+    (req, res) => {
+        const token = generateUserToken(req.user._id)
+        res.json({
+            msg: "Here is your authentication token. Make sure to send it with your request every time you need to access a protected API endpoint.",
             token: token
         })
-    } else {
-        res.status(401).json({ msg: 'Wrong username and/or password.' })
     }
-}
+]
