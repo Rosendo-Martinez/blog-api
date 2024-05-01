@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const passport = require('../passportjs')
 const User = require('../models/User')
+const Author = require('../models/Author')
 const { body, validationResult } = require('express-validator')
 const bcrypt = require('bcrypt')
 
@@ -48,6 +49,27 @@ async function updateUser(user, updates) {
     }
 
     return updatedFields;
+}
+
+/**
+ * Retrieves detailed account information for a given user.
+ * @param {Object} user The user object obtained from the authentication strategy.
+ * @returns {Promise<Object>} A promise that resolves to an object containing user details.
+ */
+async function getAccountDetails(user) {
+    try {
+        const author = await Author.findOne({ user: user._id }).exec()
+        return {
+            email: user.email,
+            username: user.username,
+            userId: user._id.toString(),
+            isAuthor: !!author,
+            authorId: author ? author._id.toString() : undefined
+        }
+    } catch (error) {
+        console.error('Error fetching author details:', error)
+        throw error // Rethrow to handle it in the calling scope.
+    }
 }
 
 module.exports.register = [
@@ -158,8 +180,13 @@ module.exports.updateAccount = [
 
 module.exports.getAccount = [
     passport.authenticate('jwt', { session: false }),
-    function(req, res) {
-        res.json({ msg: 'Get account not implemented', params: req.params, user: req.user, body: req.body })
+    async (req, res) => {
+        try {
+            const accountDetails = await getAccountDetails(req.user)
+            res.json(accountDetails)
+        } catch (error) {
+            res.status(500).json({ msg: 'Failed to get account.', error: error.message })
+        }
     }
 ]
 
