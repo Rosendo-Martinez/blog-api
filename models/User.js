@@ -17,4 +17,16 @@ UserSchema.methods.verifyPassword = async function(password) {
     return bcrypt.compare(password, this.hashedPassword);
 }
 
+/**
+ * Sets the user's password after hashing it.
+ * This method automates the hashing process and directly sets the hashed password on the user instance.
+ * 
+ * @param {String} password - The plain text password to hash and set.
+ * @returns {Promise<void>} A promise that resolves when the password has been hashed and set.
+ */
+UserSchema.methods.setPassword = async function(password) {
+    const SALT_ROUNDS = 2
+    this.hashedPassword = await bcrypt.hash(password, SALT_ROUNDS)
+}
+
 module.exports = mongoose.model('User', UserSchema)

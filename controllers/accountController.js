@@ -10,18 +10,23 @@ function generateUserToken(userId) {
 }
 
 /**
- * @param {String} password 
- * @returns {Promise}
+ * Creates a new user with a hashed password.
+ * 
+ * This function takes in a username, email, and password, creates a new user instance, 
+ * hashes the password, sets it to the user instance, saves the user to the database, 
+ * and then returns the user object.
+ * 
+ * @param {string} username - The username for the new user.
+ * @param {string} email - The email address for the new user.
+ * @param {string} password - The password for the new user which will be hashed before storage.
+ * @returns {Promise<Object>} A promise that resolves to the new user object.
+ * @throws {Error} If there is an error during user creation or hashing the password.
  */
-function hashPassword(password) {
-    const SALT_ROUNDS = 2
-    return bcrypt.hash(password, SALT_ROUNDS)
-}
-
 async function createUser(username, email, password) {
-    const hashedPassword = await hashPassword(password)
-
-    return new User({ username: username, email: email, hashedPassword: hashedPassword })
+    const user = new User({ username, email })
+    await user.setPassword(password)
+    await user.save()
+    return user
 }
 
 /**
@@ -40,7 +45,7 @@ async function updateUser(user, updates) {
         }
 
         if (field === 'password') {
-            user.hashedPassword = await hashPassword(updates[field]); // Ensure password is hashed.
+            await user.setPassword(updates[field])
             updatedFields.push('password');
         } else {
             user[field] = updates[field];
@@ -110,7 +115,6 @@ module.exports.register = [
 
         try {
             const user = await createUser(req.body.username, req.body.email, req.body.password)
-            await user.save()
             res.json({ token: generateUserToken(user._id) })
         } catch (error) {
             res.status(500).json({ message: 'Error creating user', error: error.message })
