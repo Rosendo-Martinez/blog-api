@@ -1,4 +1,4 @@
-const passport = require('../passportjs')
+const passport = require('../config/passportConfig')
 const User = require('../models/User')
 const { body, validationResult } = require('express-validator')
 const bcrypt = require('bcrypt')

@@ -1,4 +1,4 @@
-require('./connectToMongoDB')
+require('./config/mongoDBConfig')
 const express = require('express')
 const bodyParser = require('body-parser')
 
