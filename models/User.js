@@ -29,4 +29,33 @@ UserSchema.methods.setPassword = async function(password) {
     this.hashedPassword = await bcrypt.hash(password, SALT_ROUNDS)
 }
 
+/**
+ * Updates user instance based on provided fields.
+ * Validates that updates only target existing schema fields and throws an error if an invalid field is included.
+ *
+ * @param {Object} updates - An object containing the fields to update.
+ * @returns {Promise<String[]>} A promise that resolves to an array of strings listing the updated fields.
+ * @throws {Error} Throws an error if an attempt is made to update a non-existing schema field.
+ */
+UserSchema.methods.update = async function(updates) {
+    const updatedFields = []
+
+    for (const field in updates) {
+        // Check if it's a valid schema field or 'password' which is handled specially
+        if (!this.schema.path(field) && field !== 'password') {
+            throw new Error(`Cannot update non-existing field: ${field}`);
+        }
+
+        if (field === 'password') {
+            await this.setPassword(updates[field]);
+            updatedFields.push('password');
+        } else {
+            this[field] = updates[field];
+            updatedFields.push(field);
+        }
+    }
+
+    return updatedFields
+}
+
 module.exports = mongoose.model('User', UserSchema)

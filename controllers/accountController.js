@@ -30,33 +30,6 @@ async function createUser(username, email, password) {
 }
 
 /**
- * Updates the user object (does not save).
- * 
- * @param {*} user User object to update.
- * @param {*} updates Object containing the fields to update; undefined values will be ignored.
- * @returns {Promise<String[]>} Promise returns an array of strings listing the updated fields.
- */
-async function updateUser(user, updates) {
-    const updatedFields = [];
-
-    for (const field in updates) {
-        if (updates[field] === undefined) {
-            continue; // Skip undefined values to prevent unwanted updates.
-        }
-
-        if (field === 'password') {
-            await user.setPassword(updates[field])
-            updatedFields.push('password');
-        } else {
-            user[field] = updates[field];
-            updatedFields.push(field);
-        }
-    }
-
-    return updatedFields;
-}
-
-/**
  * Retrieves detailed account information for a given user.
  * @param {Object} user The user object obtained from the authentication strategy.
  * @returns {Promise<Object>} A promise that resolves to an object containing user details.
@@ -172,8 +145,18 @@ module.exports.updateAccount = [
         }
 
         try {
-            const updatedFields = await updateUser(req.user, { username: req.body.newUsername, email: req.body.newEmail, password: req.body.newPassword })
-    
+            const updates = {}
+            if (req.body.newUsername) {
+                updates.username = req.body.newUsername
+            }
+            if (req.body.newEmail) {
+                updates.email = req.body.newEmail
+            }
+            if (req.body.newPassword) {
+                updates.password = req.body.newPassword
+            }
+            
+            await req.user.update(updates)
             await req.user.save();
             res.json({ msg: 'Account updated.', fieldsUpdated: updatedFields });
         } catch (error) {
