@@ -1,23 +1,9 @@
-const jwt = require('jsonwebtoken')
 const passport = require('../passportjs')
 const User = require('../models/User')
 const Author = require('../models/Author')
 const { body, validationResult } = require('express-validator')
 const bcrypt = require('bcrypt')
-
-/**
- * Generates a JWT token for a user.
- * 
- * This function takes a user's ID and uses it to generate a JSON Web Token (JWT).
- * The generated token can be used for secure communication between the client and the server
- * by ensuring that each request from the client is authenticated.
- * 
- * @param {string} userId - The user's unique identifier.
- * @returns {string} A JWT token that can be used to authenticate user requests.
- */
-function generateUserToken(userId) {
-    return jwt.sign({ userId: userId }, process.env.JWT_SECRET, { expiresIn: '5m' })
-}
+const { generateUserToken } = require('../utils/jwtUtils')
 
 /**
  * Creates a new user with a hashed password.
