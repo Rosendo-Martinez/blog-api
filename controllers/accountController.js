@@ -71,8 +71,8 @@ module.exports.updateAccount = [
         .trim()
         .isEmail()
         .withMessage('Email must be valid.')
-        .custom(async (email, { req }) => {
-            const user = await User.findOne({ email: email, _id: { $not: req.user._id } }).exec()
+        .custom(async (email) => {
+            const user = await User.findOne({ email: email }).exec()
 
             if (user) {
                 throw new Error()
