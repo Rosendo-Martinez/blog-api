@@ -133,6 +133,21 @@ module.exports.getAccount = [
 ]
 
 module.exports.login = [
+    body('username')
+        .trim()
+        .notEmpty()
+        .withMessage('Username is required'),
+    body('password')
+        .notEmpty()
+        .withMessage('Password is required'),
+    (req, res, next) => {
+        const result = validationResult(req)
+
+        if (!result.isEmpty()) {
+            return res.status(400).json(result.mapped())
+        }
+        next()
+    },
     (req, res, next) => {
         passport.authenticate('local', (err, user, info) => {
             if (err) {
