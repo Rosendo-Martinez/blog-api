@@ -111,7 +111,7 @@ module.exports.updateAccount = [
                 updates.password = req.body.newPassword
             }
             
-            await req.user.update(updates)
+            const updatedFields = await req.user.update(updates)
             await req.user.save();
             res.json({ msg: 'Account updated.', fieldsUpdated: updatedFields });
         } catch (error) {
