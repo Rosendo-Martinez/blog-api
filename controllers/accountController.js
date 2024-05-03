@@ -115,7 +115,7 @@ module.exports.updateAccount = [
             await req.user.save();
             res.json({ msg: 'Account updated.', fieldsUpdated: updatedFields });
         } catch (error) {
-            res.status(500).json({ msg: 'Failed to update account.', error: error.message, fieldsAttempted: updatedFields });
+            res.status(500).json({ msg: 'Failed to update account.', error: error.message });
         }
     }
 ]
