@@ -3,6 +3,12 @@ const request = require('supertest');
 var assert = require('assert')
 const { dbConnect, dbDisconnect } = require('../mongoDBConfigTest')
 
+// Chai is a ESM, so can't use 'require()'
+before(async () => {
+    const { expect } = await import('chai')
+    global.expect = expect
+})
+
 
 describe('/register', function () {
     before(function(done) { 
@@ -17,17 +23,16 @@ describe('/register', function () {
             .catch(err => done(err))
     })
 
-    it('should allow user with valid user input to create an account', function (done) {
-        request(app)
+    it('should allow user with valid user input to create an account', async () => {
+        const response = await request(app)
             .post('/register')
             .send({ username: 'tao', email: 'tao@gmail.com', password: 'password' })
             .expect('Content-Type', /json/)
             .expect(200)
-            .expect(function (res) {
-                assert(res.body.token != undefined)
-            })
-            .end(done)
+    
+        expect(response.body).to.have.property('token').that.is.a('string').and.has.length.greaterThan(1)
     })
+    
 
     it('should reject too short usernames', function (done) {
         request(app)
