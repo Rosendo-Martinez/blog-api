@@ -87,11 +87,17 @@ describe('/register', function () {
     })
     
     it('should reject invalid email', async () => {
-        await request(app)
+        const invalidEmail = "emma1234"
+
+        const response = await request(app)
             .post('/register')
-            .send({ username: 'lo', email: 'lo1234', password: 'password' })
+            .send({ username: validUser.username, email: invalidEmail, password: validUser.password })
             .expect('Content-Type', /json/)
             .expect(400)
+        
+        expect(response.body).to.have.property('email').that.is.an('object')
+        expect(response.body.email).to.have.property('msg').that.is.a('string')
+        expect(response.body.email.msg).to.equal(ERROR_MESSAGES.INVALID_EMAIL)
     })
     
     it('should reject email that is already registered to another user', async () => {
