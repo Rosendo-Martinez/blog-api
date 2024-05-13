@@ -2,6 +2,8 @@ const app = require('../appTest')
 const request = require('supertest');
 var assert = require('assert')
 const { dbConnect, dbDisconnect } = require('../mongoDBConfigTest')
+const NUMERIC_CONSTANTS = require('../../constants/numericConstants')
+const ERROR_MESSAGES = require('../../constants/errorMessages')
 
 // Chai is a ESM, so can't use 'require()'
 before(async () => {
@@ -31,23 +33,24 @@ describe('/register', function () {
             .send(validUser)
             .expect('Content-Type', /json/)
             .expect(200)
-    
+
         expect(response.body).to.have.property('token').that.is.a('string').and.has.length.greaterThan(1)
     })
-    
 
-    it('should reject too short usernames', async () => {
+    it('should reject username that is 1 character bellow the min username length', async () => {
+        const tooShortUsername = 'a'.repeat(NUMERIC_CONSTANTS.USERNAME.MIN_LENGTH - 1)
+
         const response = await request(app)
             .post('/register')
-            .send({ username: '', email: 'emma@gmail.com', password: 'password' })
+            .send({ username: tooShortUsername, email: validUser.email, password: validUser.password })
             .expect('Content-Type', /json/)
             .expect(400)
 
             expect(response.body).to.have.property('username').that.is.an('object')
             expect(response.body.username).to.have.property('msg').that.is.a('string')
-            expect(response.body.username.msg).to.equal("Username must be minimum of 1 and a maximum of 30 characters.")
+            expect(response.body.username.msg).to.equal(ERROR_MESSAGES.USERNAME_LENGTH)
     })
-    
+
     it('should reject too long usernames', async () => {
         await request(app)
             .post('/register')
