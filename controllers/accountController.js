@@ -5,11 +5,12 @@ const bcrypt = require('bcrypt')
 const { generateUserToken } = require('../utils/jwtUtils')
 const { createUser, getAccountDetails } = require('../services/userServices')
 const ERROR_MESSAGES = require('../constants/errorMessages')
+const NUMERIC_CONSTANTS = require('../constants/numericConstants')
 
 module.exports.register = [
     body('username')
         .trim()
-        .isLength({ min: 1, max: 30 })
+        .isLength({ min: NUMERIC_CONSTANTS.USERNAME.MIN_LENGTH, max: NUMERIC_CONSTANTS.USERNAME.MAX_LENGTH })
         .withMessage(ERROR_MESSAGES.USERNAME_LENGTH)
         .custom(async username => {
             const usernameCaseInsensitiveRegex = new RegExp(username, 'i')
@@ -33,7 +34,7 @@ module.exports.register = [
         })
         .withMessage(ERROR_MESSAGES.EMAIL_ALREADY_IN_USE),
     body('password')
-        .isLength({ min: 4, max: 25 })
+        .isLength({ min: NUMERIC_CONSTANTS.PASSWORD.MIN_LENGTH, max: NUMERIC_CONSTANTS.PASSWORD.MAX_LENGTH })
         .withMessage(ERROR_MESSAGES.PASSWORD_LENGTH),
     async (req, res) => {
         const result = validationResult(req)
@@ -56,7 +57,7 @@ module.exports.updateAccount = [
     body('newUsername')
         .optional()
         .trim()
-        .isLength({ min: 1, max: 30 })
+        .isLength({ min: NUMERIC_CONSTANTS.USERNAME.MIN_LENGTH, max: NUMERIC_CONSTANTS.USERNAME.MAX_LENGTH })
         .withMessage(ERROR_MESSAGES.USERNAME_LENGTH)
         .custom(async (username, { req }) => {
             const usernameCaseInsensitiveRegex = new RegExp(`^${username}$`, 'i')
@@ -82,7 +83,7 @@ module.exports.updateAccount = [
         .withMessage(ERROR_MESSAGES.EMAIL_ALREADY_IN_USE),
     body('newPassword')
         .optional()
-        .isLength({ min: 4, max: 25 })
+        .isLength({ min: NUMERIC_CONSTANTS.PASSWORD.MIN_LENGTH, max: NUMERIC_CONSTANTS.PASSWORD.MAX_LENGTH })
         .withMessage(ERROR_MESSAGES.PASSWORD_LENGTH),
     body('currentPassword')
         .custom(async (password, { req }) => {

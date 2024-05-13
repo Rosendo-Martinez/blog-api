@@ -1,8 +1,9 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
+const { USERNAME } = require('../constants/numericConstants')
 
 const UserSchema = new mongoose.Schema({
-    username: { type: String, required: true, index: true, unique: true, minLength: 1, maxLength: 30, trim: true },
+    username: { type: String, required: true, index: true, unique: true, minLength: USERNAME.MIN_LENGTH, maxLength: USERNAME.MAX_LENGTH, trim: true },
     email: { type: String, required: true, index: true, unique: true, minLength: 1, trim: true },
     hashedPassword: { type: String, required: true, minLength: 1 }
 });
