@@ -129,10 +129,16 @@ describe('/register', function () {
     })
     
     it('should reject too long passwords', async () => {
-        await request(app)
+        const tooLongPassword = ' '.repeat(NUMERIC_CONSTANTS.PASSWORD.MAX_LENGTH + 1)
+
+        const response = await request(app)
             .post('/register')
-            .send({ username: 'clark', email: 'clark@gmail.com', password: 'waaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaatsonAndClaaaaaaaaaaaaaaaark' })
+            .send({ username: validUser.username, email: validUser.email, password: tooLongPassword })
             .expect('Content-Type', /json/)
             .expect(400)
-    })    
+
+        expect(response.body).to.have.property('password').that.is.an('object')
+        expect(response.body.password).to.have.property('msg').that.is.a('string')
+        expect(response.body.password.msg).to.equal(ERROR_MESSAGES.PASSWORD_LENGTH)
+    })
 })
