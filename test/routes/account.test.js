@@ -51,12 +51,18 @@ describe('/register', function () {
             expect(response.body.username.msg).to.equal(ERROR_MESSAGES.USERNAME_LENGTH)
     })
 
-    it('should reject too long usernames', async () => {
-        await request(app)
+    it('should reject username that is 1 character above the max username length', async () => {
+        const tooLongUsername = 'Z'.repeat(NUMERIC_CONSTANTS.USERNAME.MAX_LENGTH + 1)
+
+        const response = await request(app)
             .post('/register')
-            .send({ username: 'superLongUsernameWhichIsWayTooLongButIsItTooLongThoughNoItsWithoutADoubtTooLong', email: 'joe@gmail.com', password: 'password' })
+            .send({ username: tooLongUsername, email: validUser.email, password: validUser.password })
             .expect('Content-Type', /json/)
             .expect(400)
+
+        expect(response.body).to.have.property('username').that.is.an('object')
+        expect(response.body.username).to.have.property('msg').that.is.a('string')
+        expect(response.body.username.msg).to.equal(ERROR_MESSAGES.USERNAME_LENGTH)
     })
     
     it('should reject username that is already registered to another user', async () => {
