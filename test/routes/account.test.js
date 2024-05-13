@@ -115,11 +115,17 @@ describe('/register', function () {
     })
     
     it('should reject too short passwords', async () => {
-        await request(app)
+        const tooShortPassword = '1'.repeat(NUMERIC_CONSTANTS.PASSWORD.MIN_LENGTH - 1)
+
+        const response = await request(app)
             .post('/register')
-            .send({ username: 'watson', email: 'watson@gmail.com', password: 'wat' })
+            .send({ username: validUser.username, email: validUser.email, password: tooShortPassword })
             .expect('Content-Type', /json/)
             .expect(400)
+
+        expect(response.body).to.have.property('password').that.is.an('object')
+        expect(response.body.password).to.have.property('msg').that.is.a('string')
+        expect(response.body.password.msg).to.equal(ERROR_MESSAGES.PASSWORD_LENGTH)
     })
     
     it('should reject too long passwords', async () => {
