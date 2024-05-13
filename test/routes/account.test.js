@@ -19,10 +19,16 @@ describe('/register', function () {
         await dbDisconnect()
     })    
 
+    const validUser = {
+        username: 'emma',
+        email: 'emma@hotmail.com',
+        password: 'emma1234'
+    }
+
     it('should allow user with valid user input to create an account', async () => {
         const response = await request(app)
             .post('/register')
-            .send({ username: 'tao', email: 'tao@gmail.com', password: 'password' })
+            .send(validUser)
             .expect('Content-Type', /json/)
             .expect(200)
     
