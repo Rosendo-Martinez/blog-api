@@ -4,6 +4,7 @@ var assert = require('assert')
 const { dbConnect, dbDisconnect } = require('../mongoDBConfigTest')
 const NUMERIC_CONSTANTS = require('../../constants/numericConstants')
 const ERROR_MESSAGES = require('../../constants/errorMessages')
+const { createUser } = require('../../services/userServices')
 
 // Chai is a ESM, so can't use 'require()'
 before(async () => {
@@ -66,11 +67,23 @@ describe('/register', function () {
     })
     
     it('should reject username that is already registered to another user', async () => {
-        await request(app)
+        const validUser2 = {
+            username: "watson",
+            email: "watson@gmail.com",
+            password: "watson1234"
+        }
+
+        const aRegisteredUser = await createUser(validUser2.username, validUser2.email, validUser2.password)
+
+        const response = await request(app)
             .post('/register')
-            .send({ username: 'tao', email: 'cookieBoy@gmail.com', password: 'password' })
+            .send({ username: aRegisteredUser.username, email: validUser.email, password: validUser.password })
             .expect('Content-Type', /json/)
             .expect(400)
+
+        expect(response.body).to.have.property('username').that.is.an('object')
+        expect(response.body.username).to.have.property('msg').that.is.a('string')
+        expect(response.body.username.msg).to.equal(ERROR_MESSAGES.USERNAME_ALREADY_IN_USE)
     })
     
     it('should reject invalid email', async () => {
