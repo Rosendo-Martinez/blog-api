@@ -11,11 +11,11 @@ before(async () => {
 
 
 describe('/register', function () {
-    before(async () => {
+    beforeEach(async () => {
         await dbConnect()
     })
     
-    after(async () => {
+    afterEach(async () => {
         await dbDisconnect()
     })    
 
