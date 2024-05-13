@@ -28,6 +28,12 @@ describe('/register', function () {
         password: 'emma1234'
     }
 
+    const validUser2 = {
+        username: "watson",
+        email: "watson@gmail.com",
+        password: "watson1234"
+    }
+
     it('should allow user with valid user input to create an account', async () => {
         const response = await request(app)
             .post('/register')
@@ -67,12 +73,6 @@ describe('/register', function () {
     })
     
     it('should reject username that is already registered to another user', async () => {
-        const validUser2 = {
-            username: "watson",
-            email: "watson@gmail.com",
-            password: "watson1234"
-        }
-
         const aRegisteredUser = await createUser(validUser2.username, validUser2.email, validUser2.password)
 
         const response = await request(app)
@@ -101,11 +101,17 @@ describe('/register', function () {
     })
     
     it('should reject email that is already registered to another user', async () => {
-        await request(app)
+        const aRegisteredUser = await createUser(validUser2.username, validUser2.email, validUser2.password)
+
+        const response = await request(app)
             .post('/register')
-            .send({ username: 'cookie', email: 'tao@gmail.com', password: 'password' })
+            .send({ username: validUser.username, email: aRegisteredUser.email, password: validUser.password })
             .expect('Content-Type', /json/)
             .expect(400)
+
+        expect(response.body).to.have.property('email').that.is.an('object')
+        expect(response.body.email).to.have.property('msg').that.is.a('string')
+        expect(response.body.email.msg).to.equal(ERROR_MESSAGES.EMAIL_ALREADY_IN_USE)
     })
     
     it('should reject too short passwords', async () => {
