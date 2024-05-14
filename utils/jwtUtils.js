@@ -10,8 +10,8 @@ const jwt = require('jsonwebtoken')
  * @param {string} userId - The user's unique identifier.
  * @returns {string} A JWT token that can be used to authenticate user requests.
  */
-function generateUserToken(userId) {
-    return jwt.sign({ userId: userId }, process.env.JWT_SECRET, { expiresIn: '5h' })
+function generateUserToken(userId, expiresIn='5h') {
+    return jwt.sign({ userId: userId }, process.env.JWT_SECRET, { expiresIn: expiresIn })
 }
 
 module.exports.generateUserToken = generateUserToken
