@@ -6,6 +6,7 @@ const NUMERIC_CONSTANTS = require('../../constants/numericConstants')
 const ERROR_MESSAGES = require('../../constants/errorMessages')
 const { createUser } = require('../../services/userServices')
 const { generateUserToken } = require('../../utils/jwtUtils')
+const User = require('../../models/User');
 
 // Chai is a ESM, so can't use 'require()'
 before(async () => {
@@ -148,14 +149,15 @@ describe('/register', function () {
 })
 
 describe('/account', function() {
-    describe('GET', function() {
-        beforeEach(async () => {
-            await dbConnect()
-        })
+    beforeEach(async () => {
+        await dbConnect()
+    })
 
-        afterEach(async () => {
-            await dbDisconnect()
-        })
+    afterEach(async () => {
+        await dbDisconnect()
+    })
+
+    describe('GET', function() {
 
         it('should deny users with no authentication token', async () => {
             await request(app)
@@ -204,6 +206,63 @@ describe('/account', function() {
     })
 
     describe('PUT', function() {
+        it('should deny unauthenticated users', async () => {
+            await request(app)
+                .put('/account')
+                .set('Authorization', '')
+                .send({})
+                .expect(401)
+        })
 
+        it('should allow authenticated user with valid inputs to update account', async () => {
+            const body = { newUsername: 'emma17', newEmail: 'emma17@hot.com', newPassword: 'EMMA17', currentPassword: VALID_USERS.EMMA.password }
+            let emma = await createUser(VALID_USERS.EMMA.username, VALID_USERS.EMMA.email, VALID_USERS.EMMA.password)
+            const token = generateUserToken(emma._id)
+
+            const response = await request(app)
+                .put('/account')
+                .set('Authorization', `Bearer ${token}`)
+                .send(body)
+                .expect('Content-Type', /json/)
+                .expect(200)
+
+            // check response outputs
+            expect(response.body).to.have.property('fieldsUpdated').that.is.an('array')
+            expect(response.body.fieldsUpdated).to.have.members(['username', 'email', 'password'])
+            
+            // check side effects
+            emma = await User.findById(emma._id).exec() // get updated user document
+            const passwordUpdated = await emma.verifyPassword(body.newPassword)
+            expect(emma.username).to.equal(body.newUsername)
+            expect(emma.email).to.equal(body.newEmail)
+            expect(passwordUpdated).to.be.true
+        })
+
+        it('should deny authenticated users with valid inputs but incorrect password', async () => {
+            // set up user
+            const body = { newUsername: 'emma17', newEmail: 'emma17@hot.com', newPassword: 'EMMA17', currentPassword: VALID_USERS.EMMA.password + '1234' }
+            const emma = await createUser(VALID_USERS.EMMA.username, VALID_USERS.EMMA.email, VALID_USERS.EMMA.password)
+            const token = generateUserToken(emma._id)
+            
+            // make request w/ incorrect password
+            const response = await request(app)
+                .put('/account')
+                .set('Authorization', `Bearer ${token}`)
+                .send(body)
+                .expect('Content-Type', /json/)
+                .expect(400)
+
+            // check response
+            expect(response.body).to.not.have.property('fieldsUpdated')
+            expect(response.body).to.have.property('currentPassword')
+            expect(response.body.currentPassword.msg).to.equal(ERROR_MESSAGES.INCORRECT_PASSWORD)
+
+            // check no side effects occurred
+            const emmaUpToDate = await User.findById(emma._id).exec() // get updated user document
+            const passwordNotUpdated = await emmaUpToDate.verifyPassword(VALID_USERS.EMMA.password)
+            expect(emmaUpToDate.username).to.equal(VALID_USERS.EMMA.username)
+            expect(emmaUpToDate.email).to.equal(VALID_USERS.EMMA.email)
+            expect(passwordNotUpdated).to.be.true
+        })
     })
 })
