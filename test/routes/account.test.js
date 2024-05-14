@@ -5,6 +5,7 @@ const { dbConnect, dbDisconnect } = require('../mongoDBConfigTest')
 const NUMERIC_CONSTANTS = require('../../constants/numericConstants')
 const ERROR_MESSAGES = require('../../constants/errorMessages')
 const { createUser } = require('../../services/userServices')
+const { generateUserToken } = require('../../utils/jwtUtils')
 
 // Chai is a ESM, so can't use 'require()'
 before(async () => {
@@ -148,7 +149,58 @@ describe('/register', function () {
 
 describe('/account', function() {
     describe('GET', function() {
-        
+        beforeEach(async () => {
+            await dbConnect()
+        })
+
+        afterEach(async () => {
+            await dbDisconnect()
+        })
+
+        it('should deny users with no authentication token', async () => {
+            await request(app)
+                .get('/account')
+                .set('Authorization', '')
+                .send({})
+                .expect(401)
+        })
+
+        it('should deny users with illegal authentication token', async () => {
+            const randomToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+
+            await request(app)
+                .get('/account')
+                .set('Authorization', `Bearer ${randomToken}`)
+                .expect(401)
+        })
+
+        it('should deny users with legal but expired authentication token', async () => {
+            const emma = await createUser(VALID_USERS.EMMA.username, VALID_USERS.EMMA.email, VALID_USERS.EMMA.password)
+            const expiredToken = generateUserToken(emma._id, '-1h') // expired 1 hour ago
+
+            await request(app)
+                .get('/account')
+                .set('Authorization', `Bearer ${expiredToken}`)
+                .expect(401)
+        })
+
+        it('should allow request of authenticated users', async () => {
+            const emma = await createUser(VALID_USERS.EMMA.username, VALID_USERS.EMMA.email, VALID_USERS.EMMA.password)
+            const token = generateUserToken(emma._id, '1h')
+
+            const response = await request(app)
+                .get('/account')
+                .set('Authorization', `Bearer ${token}`)
+                .expect('Content-Type', /json/)
+                .expect(200)
+
+            expect(response.body).to.have.property('username').that.is.an('string')
+            expect(response.body).to.have.property('userId').that.is.an('string')
+            expect(response.body).to.have.property('email').that.is.an('string')
+            expect(response.body.username).to.equal(emma.username)
+            expect(response.body.userId).to.equal(emma._id.toString())
+            expect(response.body.email).to.equal(emma.email)
+        })
     })
 
     describe('PUT', function() {
