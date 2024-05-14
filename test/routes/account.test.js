@@ -12,6 +12,18 @@ before(async () => {
     global.expect = expect
 })
 
+const VALID_USERS = {
+    EMMA: {
+        username: 'emma',
+        email: 'emma@hotmail.com',
+        password: 'emma1234'
+    },
+    WATSON: {
+        username: "watson",
+        email: "watson@gmail.com",
+        password: "watson1234"
+    }
+}
 
 describe('/register', function () {
     beforeEach(async () => {
@@ -22,22 +34,13 @@ describe('/register', function () {
         await dbDisconnect()
     })    
 
-    const validUser = {
-        username: 'emma',
-        email: 'emma@hotmail.com',
-        password: 'emma1234'
-    }
-
-    const validUser2 = {
-        username: "watson",
-        email: "watson@gmail.com",
-        password: "watson1234"
-    }
+    const EMMA = VALID_USERS.EMMA
+    const WATSON = VALID_USERS.WATSON
 
     it('should allow user with valid user input to create an account', async () => {
         const response = await request(app)
             .post('/register')
-            .send(validUser)
+            .send(EMMA)
             .expect('Content-Type', /json/)
             .expect(200)
 
@@ -49,7 +52,7 @@ describe('/register', function () {
 
         const response = await request(app)
             .post('/register')
-            .send({ username: tooShortUsername, email: validUser.email, password: validUser.password })
+            .send({ username: tooShortUsername, email: EMMA.email, password: EMMA.password })
             .expect('Content-Type', /json/)
             .expect(400)
 
@@ -63,7 +66,7 @@ describe('/register', function () {
 
         const response = await request(app)
             .post('/register')
-            .send({ username: tooLongUsername, email: validUser.email, password: validUser.password })
+            .send({ username: tooLongUsername, email: EMMA.email, password: EMMA.password })
             .expect('Content-Type', /json/)
             .expect(400)
 
@@ -73,11 +76,11 @@ describe('/register', function () {
     })
     
     it('should reject username that is already registered to another user', async () => {
-        const aRegisteredUser = await createUser(validUser2.username, validUser2.email, validUser2.password)
+        const aRegisteredUser = await createUser(WATSON.username, WATSON.email, WATSON.password)
 
         const response = await request(app)
             .post('/register')
-            .send({ username: aRegisteredUser.username, email: validUser.email, password: validUser.password })
+            .send({ username: aRegisteredUser.username, email: EMMA.email, password: EMMA.password })
             .expect('Content-Type', /json/)
             .expect(400)
 
@@ -91,7 +94,7 @@ describe('/register', function () {
 
         const response = await request(app)
             .post('/register')
-            .send({ username: validUser.username, email: invalidEmail, password: validUser.password })
+            .send({ username: EMMA.username, email: invalidEmail, password: EMMA.password })
             .expect('Content-Type', /json/)
             .expect(400)
         
@@ -101,11 +104,11 @@ describe('/register', function () {
     })
     
     it('should reject email that is already registered to another user', async () => {
-        const aRegisteredUser = await createUser(validUser2.username, validUser2.email, validUser2.password)
+        const aRegisteredUser = await createUser(WATSON.username, WATSON.email, WATSON.password)
 
         const response = await request(app)
             .post('/register')
-            .send({ username: validUser.username, email: aRegisteredUser.email, password: validUser.password })
+            .send({ username: EMMA.username, email: aRegisteredUser.email, password: EMMA.password })
             .expect('Content-Type', /json/)
             .expect(400)
 
@@ -119,7 +122,7 @@ describe('/register', function () {
 
         const response = await request(app)
             .post('/register')
-            .send({ username: validUser.username, email: validUser.email, password: tooShortPassword })
+            .send({ username: EMMA.username, email: EMMA.email, password: tooShortPassword })
             .expect('Content-Type', /json/)
             .expect(400)
 
@@ -133,12 +136,22 @@ describe('/register', function () {
 
         const response = await request(app)
             .post('/register')
-            .send({ username: validUser.username, email: validUser.email, password: tooLongPassword })
+            .send({ username: EMMA.username, email: EMMA.email, password: tooLongPassword })
             .expect('Content-Type', /json/)
             .expect(400)
 
         expect(response.body).to.have.property('password').that.is.an('object')
         expect(response.body.password).to.have.property('msg').that.is.a('string')
         expect(response.body.password.msg).to.equal(ERROR_MESSAGES.PASSWORD_LENGTH)
+    })
+})
+
+describe('/account', function() {
+    describe('GET', function() {
+        
+    })
+
+    describe('PUT', function() {
+
     })
 })
