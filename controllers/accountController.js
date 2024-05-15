@@ -151,12 +151,12 @@ module.exports.login = [
         next()
     },
     (req, res, next) => {
-        passport.authenticate('local', (err, user, info) => {
+        passport.authenticate('local', (err, user) => {
             if (err) {
                 return res.status(500).json({ msg: ERROR_MESSAGES.AUTHENTICATION_FAILURE, error: err.toString() })
             }
             if (!user) {
-                return res.status(401).json({ msg: ERROR_MESSAGES.AUTHENTICATION_FAILURE, reason: info.message })
+                return res.status(401).json({ msg: ERROR_MESSAGES.INCORRECT_USERNAME_AND_OR_PASSWORD })
             }
             req.user = user
             next()

@@ -266,3 +266,56 @@ describe('/account', function() {
         })
     })
 })
+
+describe('/login', function() {
+    beforeEach(async () => {
+        await dbConnect()
+    })
+
+    afterEach(async () => {
+        await dbDisconnect()
+    })
+
+    it('should reject invalid inputs', async () => {
+        const response = await request(app)
+            .post('/login')
+            .expect('Content-Type', /json/)
+            .expect(400)
+
+        expect(response.body).to.have.property('password')
+        expect(response.body).to.have.property('username')
+        expect(response.body.password.msg).to.equal(ERROR_MESSAGES.PASSWORD_MISSING)
+        expect(response.body.username.msg).to.equal(ERROR_MESSAGES.USERNAME_MISSING)
+    })
+
+    it('should reject incorrect password', async () => {
+        const emma = await createUser(VALID_USERS.EMMA.username, VALID_USERS.EMMA.email, VALID_USERS.EMMA.password)
+
+        const response = await request(app)
+            .post('/login')
+            .send({ username: emma.username, password: VALID_USERS.EMMA.password + 'abc' })
+            .expect('Content-Type', /json/)
+            .expect(401)
+
+        expect(response.body).to.have.property('msg')
+        expect(response.body.msg).to.equal(ERROR_MESSAGES.INCORRECT_USERNAME_AND_OR_PASSWORD)
+    })
+
+    it('should authenticate users with correct credential inputs', async () => {
+        const emma = await createUser(VALID_USERS.EMMA.username, VALID_USERS.EMMA.email, VALID_USERS.EMMA.password)
+
+        const response = await request(app)
+            .post('/login')
+            .send({ username: emma.username, password: VALID_USERS.EMMA.password })
+            .expect('Content-Type', /json/)
+            .expect(200)
+
+        expect(response.body).to.have.property('token')
+        
+        await request(app)
+                .get('/account')
+                .set('Authorization', `Bearer ${response.body.token}`)
+                .expect('Content-Type', /json/)
+                .expect(200)
+    })
+})

@@ -10,7 +10,8 @@ const ERROR_MESSAGES = {
     AUTHENTICATION_FAILURE: 'Authentication failed.',
     ACCOUNT_UPDATE_FAILED: 'Failed to update account.',
     GET_ACCOUNT_FAILED: 'Failed to get account.',
-    CREATE_ACCOUNT_FAILED: 'Failed to create account.'
+    CREATE_ACCOUNT_FAILED: 'Failed to create account.',
+    INCORRECT_USERNAME_AND_OR_PASSWORD: 'Username or password is incorrect.'
 }
 
 module.exports = ERROR_MESSAGES
