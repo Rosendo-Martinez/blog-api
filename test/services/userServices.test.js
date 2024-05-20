@@ -1,7 +1,7 @@
+const { dbConnect, dbDisconnect } = require('../mongoDBConfigTest')
 const { createUser, getAccountDetails } = require('../../services/userServices')
 const User = require('../../models/User')
-// const Author = require('../../models/Author');
-const { dbConnect, dbDisconnect } = require('../mongoDBConfigTest')
+const Author = require('../../models/Author')
 
 // Chai is a ESM, so can't use 'require()'
 before(async () => {
@@ -41,20 +41,45 @@ describe('createUser', () => {
     })
 })
 
-// describe('getAccountDetails', () => {
-//     it('should retrieve account details for a user', async () => {
-//         const user = new User({ username: 'testuser', email: 'test@example.com' });
-//         await user.save();
+describe('getAccountDetails', () => {
+    beforeEach(async () => {
+        await dbConnect()
+    })
 
-//         const accountDetails = await getAccountDetails(user);
+    afterEach(async () => {
+        await dbDisconnect()
+    })
 
-//         // Verify that the account details are as expected
-//         expect(accountDetails).to.have.property('email', user.email);
-//         expect(accountDetails).to.have.property('username', user.username);
-//         expect(accountDetails).to.have.property('userId', user._id.toString());
-//         expect(accountDetails).to.have.property('isAuthor', false);
-//         expect(accountDetails).to.not.have.property('authorId');
-//     });
+    it('should retrieve account details for a user', async () => {
+        const user = new User({ username: 'testuser', email: 'test@example.com' })
+        await user.setPassword('password123')
+        await user.save()
+        const accountDetails = await getAccountDetails(user)
 
-//     // Add more tests, including cases where the user is an author or there are errors fetching details.
-// });
+        // Verify that the account details are as expected
+        expect(accountDetails).to.have.property('email', user.email);
+        expect(accountDetails).to.have.property('username', user.username);
+        expect(accountDetails).to.have.property('userId', user._id.toString());
+        expect(accountDetails).to.have.property('isAuthor', false);
+        expect(accountDetails).to.have.property('authorId', null);
+        console.log(accountDetails)
+    })
+
+    // Add more tests, including cases where the user is an author or there are errors fetching details.
+    it('should retrieve account details for a user who is an author', async () => {
+        const user = new User({ username: 'testuser', email: 'test@example.com' })
+        await user.setPassword('password123')
+        await user.save()
+        const author = new Author({ user: user._id })
+        author.save()
+
+        const accountDetails = await getAccountDetails(user)
+
+        // Verify that the account details are as expected
+        expect(accountDetails).to.have.property('email', user.email)
+        expect(accountDetails).to.have.property('username', user.username)
+        expect(accountDetails).to.have.property('userId', user._id.toString())
+        expect(accountDetails).to.have.property('isAuthor', true)
+        expect(accountDetails).to.have.property('authorId', author._id.toString())
+    })
+});

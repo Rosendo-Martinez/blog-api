@@ -34,7 +34,7 @@ async function getAccountDetails(user) {
             username: user.username,
             userId: user._id.toString(),
             isAuthor: !!author,
-            authorId: author ? author._id.toString() : undefined
+            authorId: author ? author._id.toString() : null
         }
     } catch (error) {
         console.error('Error fetching author details:', error)
