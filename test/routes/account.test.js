@@ -7,25 +7,13 @@ const ERROR_MESSAGES = require('../../constants/errorMessages')
 const { createUser } = require('../../services/userServices')
 const { generateUserToken } = require('../../utils/jwtUtils')
 const User = require('../../models/User');
+const { VALID_USERS } = require('../constants/testConstants')
 
 // Chai is a ESM, so can't use 'require()'
 before(async () => {
     const { expect } = await import('chai')
     global.expect = expect
 })
-
-const VALID_USERS = {
-    EMMA: {
-        username: 'emma',
-        email: 'emma@hotmail.com',
-        password: 'emma1234'
-    },
-    WATSON: {
-        username: "watson",
-        email: "watson@gmail.com",
-        password: "watson1234"
-    }
-}
 
 describe('/register', function () {
     beforeEach(async () => {

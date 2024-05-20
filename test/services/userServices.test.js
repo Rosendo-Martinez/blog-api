@@ -62,7 +62,6 @@ describe('getAccountDetails', () => {
         expect(accountDetails).to.have.property('userId', user._id.toString());
         expect(accountDetails).to.have.property('isAuthor', false);
         expect(accountDetails).to.have.property('authorId', null);
-        console.log(accountDetails)
     })
 
     // Add more tests, including cases where the user is an author or there are errors fetching details.

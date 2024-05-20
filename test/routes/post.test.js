@@ -3,6 +3,8 @@ const request = require('supertest')
 const { dbConnect, dbDisconnect } = require('../mongoDBConfigTest')
 const NUMERIC_CONSTANTS = require('../../constants/numericConstants')
 const ERROR_MESSAGES = require('../../constants/errorMessages')
+const { createUser, getAccountDetails } = require('../../services/userServices')
+const { VALID_USERS } = require('../constants/testConstants')
 
 
 // Chai is a ESM, so can't use 'require()'
@@ -12,6 +14,14 @@ before(async () => {
 })
 
 describe('/posts', function() {
+    beforeEach(async () => {
+        await dbConnect()
+    })
+    
+    afterEach(async () => {
+        await dbDisconnect()
+    })
+
     it('it should require users to be authenticated', async () => {
         const response = await request(app)
             .post('/posts')
@@ -23,6 +33,13 @@ describe('/posts', function() {
         expect(response.body).to.have.property('msg', ERROR_MESSAGES.AUTHENTICATION_FAILURE)
     })
 
+    it('it should require authenticated users to be authors', async () => {
+        // create user
+        // send req
+        // check res
+
+    })
+
     it('it should allow Authors with valid inputs to create post', async () => {
         
     })
@@ -31,8 +48,5 @@ describe('/posts', function() {
 
     })
 
-
-    it('it should require authenticated users to be authors', async () => {
-
-    })
+    
 })
