@@ -1,10 +1,27 @@
+const passport = require('../config/passportConfig')
+const ERROR_MESSAGES = require('../constants/errorMessages')
+
 module.exports.getPosts = function(req, res) {
     res.json(`Get post list not implemented`)
 }
 
-module.exports.createPost = function(req, res) {
-    res.json({ msg: 'Create post not implemented', body: req.body, user: req.user })
-}
+module.exports.createPost = [
+    (req, res, next) => {
+        passport.authenticate('local', (err, user) => {
+            if (err) {
+                return res.status(500).json({ msg: ERROR_MESSAGES.AUTHENTICATION_FAILURE, error: err.toString() })
+            }
+            if (!user) {
+                return res.status(401).json({ msg: ERROR_MESSAGES.AUTHENTICATION_FAILURE })
+            }
+            req.user = user
+            next()
+        })(req, res, next)
+    },
+    function(req, res) {
+        res.json({ msg: 'Create post not implemented', body: req.body, user: req.user })
+    }
+]
 
 module.exports.getPostById = function(req, res) {
     res.json({ msg: 'Get post by id not implemeted', params: req.params, user: req.user })
